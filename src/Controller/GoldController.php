@@ -16,6 +16,10 @@ class GoldController extends AbstractController
         $endDate = date("Y-m-d", strtotime($timestamps["to"]));
         $url = "http://api.nbp.pl/api/cenyzlota/{$startDate}/{$endDate}";
         $goldPrices = json_decode(file_get_contents($url), true);
+        $sumOfGoldPrices=0;
+        foreach($goldPrices as $value){
+            $sumOfGoldPrices+=$value["cena"];
+        }
         return $this->json([
             "from" => date_format(
                 date_create($goldPrices[0]["data"]),
@@ -25,7 +29,7 @@ class GoldController extends AbstractController
                 date_create($goldPrices[count($goldPrices) - 1]["data"]),
                 DATE_W3C
             ),
-            "avg" => 228.1,
+            "avg" => round($sumOfGoldPrices/count($goldPrices),2),
         ]);
     }
 }
