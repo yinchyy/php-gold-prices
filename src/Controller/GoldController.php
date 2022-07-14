@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+date_default_timezone_set("Europe/Warsaw");
+
 class GoldController extends AbstractController
 {
     #[Route("/api/gold", name: "app_gold", methods: ["POST"])]
