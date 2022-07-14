@@ -48,7 +48,7 @@ class GoldController extends AbstractController
         $goldPrices = json_decode(@file_get_contents($url), true);
         $sumOfGoldPrices = 0;
 
-        if (!GoldController::isJSONValid($goldPrices)) {
+        if (is_null($goldPrices)) {
             return $this->json([
                 "message" => "Invalid date range.",
             ])->setStatusCode("400");
@@ -80,7 +80,7 @@ class GoldController extends AbstractController
         }
         return false;
     }
-    public static function isJSONValid(string|null $json): bool
+    public static function isJSONValid(string $json): bool
     {
         try {
             if (is_null(json_decode($json, null))) {
