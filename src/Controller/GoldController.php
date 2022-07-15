@@ -7,14 +7,21 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Psr\Log\LoggerInterface;
 
 date_default_timezone_set("Europe/Warsaw");
 
 class GoldController extends AbstractController
 {
     #[Route("/api/gold", name: "app_gold", methods: ["POST"])]
-    public function index(Request $request): JsonResponse {
+    public function index(
+        Request $request,
+        LoggerInterface $logger
+    ): JsonResponse {
         if (!GoldController::isJSONValid($request->getContent())) {
+            $logger->error(
+                "Request failed: Received message that was not valid JSON."
+            );
             return $this->json([
                 "message" => "Invalid format, data should be in JSON.",
             ])->setStatusCode("400");
@@ -28,6 +35,10 @@ class GoldController extends AbstractController
                 array_key_exists("to", $timestamps)
             )
         ) {
+            $logger->error(
+                "Request failed: Received JSON without 'from' or/and 'to' properties.",
+                [$timestamps]
+            );
             return $this->json([
                 "message" => "Invalid data. Missing 'from' or 'to' property.",
             ])->setStatusCode("400");
@@ -38,6 +49,10 @@ class GoldController extends AbstractController
                 GoldController::isValidISO8601Date($timestamps["to"])
             )
         ) {
+            $logger->error(
+                "Request failed: Received date in format not matching ISO8601 standard.",
+                [$timestamps]
+            );
             return $this->json([
                 "message" => "Invalid date format. Use ISO8601 date format.",
             ])->setStatusCode("422");
@@ -49,6 +64,10 @@ class GoldController extends AbstractController
         $sumOfGoldPrices = 0;
 
         if (is_null($goldPrices)) {
+            $logger->error(
+                "Request failed: No data was found in API response.",
+                [$timestamps]
+            );
             return $this->json([
                 "message" => "Invalid date range.",
             ])->setStatusCode("400");
@@ -56,6 +75,9 @@ class GoldController extends AbstractController
         foreach ($goldPrices as $value) {
             $sumOfGoldPrices += $value["cena"];
         }
+        $logger->info(
+            "Request success: Successful request was made by the user."
+        );
         return $this->json([
             "from" => date_format(
                 date_create($goldPrices[0]["data"]),
